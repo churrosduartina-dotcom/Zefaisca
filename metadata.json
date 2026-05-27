@@ -1,0 +1,6 @@
+{
+  "name": "Calculadora de Eletricista",
+  "description": "Calculadora profissional para eletricistas: cálculo de bitola de cabo, KVA, corrente e queda de tensão.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
