@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { AppliancePreset, CircuitoItem } from './types';
 import appLogo from './assets/images/app_logo_1779886943076.png';
+import { LoadChart } from './components/LoadChart';
 
 // Accurate NBR 5410 PVC Conductor Capacities for Copper in common conduits (B1 method)
 // Columns index different loaded conductors configurations (2 loaded vs 3 loaded)
@@ -560,7 +561,10 @@ export default function App() {
                       id="pot-inp"
                       type="number"
                       value={potencia || ''}
-                      onChange={(e) => setPotencia(Math.max(0, Number(e.target.value)))}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPotencia(val === '' ? 0 : Math.max(0, Number(val)));
+                      }}
                       className="w-full bg-neutral-950 border border-neutral-800/80 focus:border-amber-500 text-white font-mono font-black text-lg outline-none rounded-2xl p-3.5 px-4 transition-all focus:ring-2 focus:ring-amber-500/20"
                       placeholder="0"
                     />
@@ -583,7 +587,10 @@ export default function App() {
                       id="dist-inp"
                       type="number"
                       value={distancia || ''}
-                      onChange={(e) => setDistancia(Math.max(1, Number(e.target.value)))}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setDistancia(val === '' ? 0 : Math.max(0, Number(val)));
+                      }}
                       className="w-full bg-neutral-950 border border-neutral-800/80 focus:border-amber-500 text-white font-mono font-black text-lg outline-none rounded-2xl p-3.5 px-4 transition-all focus:ring-2 focus:ring-amber-500/20"
                       placeholder="20"
                     />
@@ -659,9 +666,14 @@ export default function App() {
                     max="1.0"
                     value={fatorPotencia || ''}
                     onChange={(e) => {
-                      let val = Number(e.target.value);
+                      const inputVal = e.target.value;
+                      if (inputVal === '') {
+                        setFatorPotencia(0);
+                        return;
+                      }
+                      let val = Number(inputVal);
                       if (val > 1) val = 1;
-                      if (val <= 0) val = 0.1;
+                      if (val < 0) val = 0;
                       setFatorPotencia(val);
                     }}
                     className="w-full bg-neutral-950 border border-neutral-800/80 focus:border-amber-500 text-white font-mono font-bold text-sm outline-none rounded-xl p-3 transition-all focus:ring-1 focus:ring-amber-500/20"
@@ -1014,6 +1026,11 @@ export default function App() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* LOAD BALANCE COMPARISON CHART */}
+            <div className="no-print">
+              <LoadChart circuitos={circuitosSalvos} />
             </div>
 
             {/* CIRCUIT HISTORY LOG LISTING */}
