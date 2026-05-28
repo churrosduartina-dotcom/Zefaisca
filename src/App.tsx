@@ -38,7 +38,7 @@ import { AppliancePreset, CircuitoItem } from './types';
 import appLogo from './assets/images/app_logo_1779886943076.png';
 import { LoadChart } from './components/LoadChart';
 
-// Accurate NBR 5410 PVC Conductor Capacities for Copper in common conduits (B1 method)
+// Accurate NBR 5410 PVC Conductor Capacities for Copper & Aluminum under different reference installation methods
 // Columns index different loaded conductors configurations (2 loaded vs 3 loaded)
 interface MaterialAmpacity {
   copper2L: number;
@@ -47,16 +47,51 @@ interface MaterialAmpacity {
   alu3L: number;
 }
 
-const NBR_AMPACITY_TABLE: Record<number, MaterialAmpacity> = {
-  1.5: { copper2L: 17.5, copper3L: 15.5, alu2L: 13.5, alu3L: 12 },
-  2.5: { copper2L: 24, copper3L: 21, alu2L: 18.5, alu3L: 16 },
-  4.0: { copper2L: 32, copper3L: 28, alu2L: 25, alu3L: 22 },
-  6.0: { copper2L: 41, copper3L: 36, alu2L: 32, alu3L: 28 },
-  10.0: { copper2L: 57, copper3L: 50, alu2L: 44, alu3L: 39 },
-  16.0: { copper2L: 76, copper3L: 68, alu2L: 59, alu3L: 53 },
-  25.0: { copper2L: 101, copper3L: 89, alu2L: 78, alu3L: 69 },
-  35.0: { copper2L: 125, copper3L: 110, alu2L: 96, alu3L: 85 },
-  50.0: { copper2L: 151, copper3L: 134, alu2L: 117, alu3L: 103 }
+const NBR_AMPACITY_TABLE: Record<'A1' | 'B1' | 'C' | 'D', Record<number, MaterialAmpacity>> = {
+  A1: {
+    1.5: { copper2L: 14.5, copper3L: 13.5, alu2L: 11, alu3L: 10 },
+    2.5: { copper2L: 19.5, copper3L: 18, alu2L: 15, alu3L: 13.5 },
+    4.0: { copper2L: 26, copper3L: 24, alu2L: 20, alu3L: 18 },
+    6.0: { copper2L: 34, copper3L: 31, alu2L: 26, alu3L: 24 },
+    10.0: { copper2L: 46, copper3L: 42, alu2L: 35, alu3L: 32 },
+    16.0: { copper2L: 61, copper3L: 56, alu2L: 47, alu3L: 43 },
+    25.0: { copper2L: 80, copper3L: 73, alu2L: 61, alu3L: 56 },
+    35.0: { copper2L: 99, copper3L: 89, alu2L: 76, alu3L: 68 },
+    50.0: { copper2L: 119, copper3L: 108, alu2L: 91, alu3L: 83 }
+  },
+  B1: {
+    1.5: { copper2L: 17.5, copper3L: 15.5, alu2L: 13.5, alu3L: 12 },
+    2.5: { copper2L: 24, copper3L: 21, alu2L: 18.5, alu3L: 16 },
+    4.0: { copper2L: 32, copper3L: 28, alu2L: 25, alu3L: 22 },
+    6.0: { copper2L: 41, copper3L: 36, alu2L: 32, alu3L: 28 },
+    10.0: { copper2L: 57, copper3L: 50, alu2L: 44, alu3L: 39 },
+    16.0: { copper2L: 76, copper3L: 68, alu2L: 59, alu3L: 53 },
+    25.0: { copper2L: 101, copper3L: 89, alu2L: 78, alu3L: 69 },
+    35.0: { copper2L: 125, copper3L: 110, alu2L: 96, alu3L: 85 },
+    50.0: { copper2L: 151, copper3L: 134, alu2L: 117, alu3L: 103 }
+  },
+  C: {
+    1.5: { copper2L: 19.5, copper3L: 17.5, alu2L: 15, alu3L: 13.5 },
+    2.5: { copper2L: 27, copper3L: 24, alu2L: 21, alu3L: 18.5 },
+    4.0: { copper2L: 36, copper3L: 32, alu2L: 28, alu3L: 25 },
+    6.0: { copper2L: 46, copper3L: 41, alu2L: 36, alu3L: 32 },
+    10.0: { copper2L: 63, copper3L: 57, alu2L: 49, alu3L: 44 },
+    16.0: { copper2L: 85, copper3L: 76, alu2L: 66, alu3L: 59 },
+    25.0: { copper2L: 112, copper3L: 101, alu2L: 87, alu3L: 78 },
+    35.0: { copper2L: 138, copper3L: 125, alu2L: 107, alu3L: 96 },
+    50.0: { copper2L: 168, copper3L: 151, alu2L: 131, alu3L: 117 }
+  },
+  D: {
+    1.5: { copper2L: 22, copper3L: 18.5, alu2L: 17, alu3L: 14.5 },
+    2.5: { copper2L: 29, copper3L: 24, alu2L: 23, alu3L: 18.5 },
+    4.0: { copper2L: 38, copper3L: 31, alu2L: 29, alu3L: 24 },
+    6.0: { copper2L: 47, copper3L: 39, alu2L: 36, alu3L: 30 },
+    10.0: { copper2L: 63, copper3L: 52, alu2L: 49, alu3L: 40 },
+    16.0: { copper2L: 81, copper3L: 67, alu2L: 62, alu3L: 52 },
+    25.0: { copper2L: 104, copper3L: 86, alu2L: 80, alu3L: 66 },
+    35.0: { copper2L: 125, copper3L: 103, alu2L: 96, alu3L: 79 },
+    50.0: { copper2L: 148, copper3L: 122, alu2L: 114, alu3L: 94 }
+  }
 };
 
 const SECTIONS_LIST = [1.5, 2.5, 4.0, 6.0, 10.0, 16.0, 25.0, 35.0, 50.0];
@@ -117,6 +152,7 @@ export default function App() {
   // New highly functional advanced inputs
   const [fases, setFases] = useState<number>(1); // 1 = Monofásico, 2 = Bifásico, 3 = Trifásico
   const [material, setMaterial] = useState<'cobre' | 'aluminio'>('cobre');
+  const [metodoInstalacao, setMetodoInstalacao] = useState<'A1' | 'B1' | 'C' | 'D'>('B1'); // NBR 5410 reference method
   const [limiteQueda, setLimiteQueda] = useState<number>(4); // default 4% limit as per NBR 5410
   const [breakerActive, setBreakerActive] = useState<boolean>(true); // interactive circuit breaker
   const [customCircuitName, setCustomCircuitName] = useState<string>('Circuito 1');
@@ -198,8 +234,9 @@ export default function App() {
     const dropVolts = (factorN * rho * distancia * currentVal) / section;
     const dropPercent = tensao > 0 ? (dropVolts / tensao) * 100 : 0;
     
-    // NBR 5410 ampacity limit check B1 PVC70 method
-    const limitStruct = NBR_AMPACITY_TABLE[section] || { copper2L: 10, copper3L: 10, alu2L: 5, alu3L: 5 };
+    // NBR 5410 ampacity limit check for the selected installation method
+    const methodTable = NBR_AMPACITY_TABLE[metodoInstalacao] || NBR_AMPACITY_TABLE['B1'];
+    const limitStruct = methodTable[section] || { copper2L: 10, copper3L: 10, alu2L: 5, alu3L: 5 };
     let maxCurrentLimit = limitStruct.copper2L;
     if (material === 'cobre') {
       maxCurrentLimit = fases === 3 ? limitStruct.copper3L : limitStruct.copper2L;
@@ -227,7 +264,7 @@ export default function App() {
         ...specs
       };
     });
-  }, [corrente, distancia, tensao, fases, material, limiteQueda]);
+  }, [corrente, distancia, tensao, fases, material, limiteQueda, metodoInstalacao]);
 
   // Recommended NBR 5410 compliance gauge: smallest section with no overload and safe voltage drop
   const bitolaNBR5410 = useMemo(() => {
@@ -272,6 +309,7 @@ export default function App() {
     setFatorPotencia(0.92);
     setFases(1);
     setMaterial('cobre');
+    setMetodoInstalacao('B1');
     setLimiteQueda(4);
     setBreakerActive(true);
     setCustomCircuitName('Circuito 1');
@@ -296,7 +334,9 @@ export default function App() {
       corrente,
       kva,
       quedaPercentual: `${selectedSpecs.dropPercent}%`,
-      data: new Date().toLocaleDateString('pt-BR')
+      data: new Date().toLocaleDateString('pt-BR'),
+      // Store the installation method
+      metodo: metodoInstalacao
     };
 
     const nextList = [item, ...circuitosSalvos];
@@ -704,6 +744,142 @@ export default function App() {
                         {m.label}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* MÉTODO DE INSTALAÇÃO (NBR 5410) */}
+                <div className="space-y-3 sm:col-span-2 bg-[#12161a] border border-neutral-800/80 rounded-2xl p-4">
+                  <div className="flex justify-between items-center pb-2 border-b border-neutral-850">
+                    <div>
+                      <h3 className="text-xs font-black uppercase text-slate-200 tracking-wider">
+                        Método de Instalação de Referência (NBR 5410)
+                      </h3>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Selecione o método físico de montagem elétrica para o dimensionamento preciso da ampacidade.
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono text-amber-500 font-extrabold uppercase bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                      Tabela 36 / 33
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {[
+                      {
+                        id: 'A1',
+                        name: 'Método A1',
+                        sub: 'Embutido em parede isolante',
+                        desc: 'Condutores isolados em eletroduto dentro de parede termicamente isolante (Ex: Drywall com gesso).'
+                      },
+                      {
+                        id: 'B1',
+                        name: 'Método B1 (Padrão)',
+                        sub: 'Embutido em alvenaria',
+                        desc: 'Condutores isolados ou cabos unipolares em eletroduto de seção circular sobrepostos ou embutidos na alvenaria.'
+                      },
+                      {
+                        id: 'C',
+                        name: 'Método C',
+                        sub: 'Sobreposto na parede',
+                        desc: 'Cabos unipolares ou multipolares fixados diretamente sobre parede, teto ou em canaletas/bandejas.'
+                      },
+                      {
+                        id: 'D',
+                        name: 'Método D',
+                        sub: 'Enterrado / Subterrâneo',
+                        desc: 'Cabos unipolares ou multipolares protegidos por eletrodutos embutidos diretamente no solo ou valas.'
+                      }
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setMetodoInstalacao(m.id as 'A1' | 'B1' | 'C' | 'D')}
+                        className={`text-left p-3 rounded-xl border transition-all flex flex-col justify-between h-auto cursor-pointer relative ${
+                          metodoInstalacao === m.id
+                            ? 'bg-amber-500/5 border-amber-500 shadow-sm text-white'
+                            : 'bg-neutral-950/60 border-neutral-850 hover:border-neutral-700 text-slate-300'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center w-full mb-1">
+                          <span className="text-xs font-black uppercase text-amber-500 tracking-wide">{m.name}</span>
+                          <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-bold uppercase ${metodoInstalacao === m.id ? 'bg-amber-500 text-neutral-950' : 'bg-neutral-900 border border-neutral-800 text-slate-400'}`}>
+                            {m.id === metodoInstalacao ? 'Ativo' : 'Usar'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block font-bold text-xs text-slate-200">{m.sub}</span>
+                          <span className="block text-[10px] leading-relaxed text-slate-400 mt-1">{m.desc}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="bg-neutral-950 rounded-xl p-3 border border-neutral-850 mt-2 space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">
+                        Resumo Técnico da Tabela 36 (Ampacidades)
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-400">
+                        Valores para condutor <strong className="text-amber-500 capitalize">{material}</strong> PVC 70°C ({fases === 3 ? '3' : '2'} condutores carregados)
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-[10px] font-mono whitespace-nowrap">
+                        <thead>
+                          <tr className="border-b border-neutral-800 text-neutral-400 uppercase font-black">
+                            <th className="pb-1.5 font-sans">Seção nominal</th>
+                            <th className="pb-1.5 text-center px-2">Método A1</th>
+                            <th className="pb-1.5 text-center px-2">Método B1</th>
+                            <th className="pb-1.5 text-center px-2">Método C</th>
+                            <th className="pb-1.5 text-center px-2">Método D</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-900 text-slate-300">
+                          {SECTIONS_LIST.map((sec) => {
+                            const getAmpValue = (met: 'A1' | 'B1' | 'C' | 'D') => {
+                              const table = NBR_AMPACITY_TABLE[met] || NBR_AMPACITY_TABLE['B1'];
+                              const cap = table[sec];
+                              if (!cap) return 0;
+                              if (material === 'cobre') {
+                                return fases === 3 ? cap.copper3L : cap.copper2L;
+                              } else {
+                                return fases === 3 ? cap.alu3L : cap.alu2L;
+                              }
+                            };
+
+                            const a1Val = getAmpValue('A1');
+                            const b1Val = getAmpValue('B1');
+                            const cVal = getAmpValue('C');
+                            const dVal = getAmpValue('D');
+
+                            return (
+                              <tr key={sec} className="hover:bg-neutral-900/40 transition-colors">
+                                <td className="py-1.5 font-bold font-sans text-slate-200">
+                                  {sec.toFixed(1)} mm²
+                                </td>
+                                <td className={`py-1.5 text-center px-2 rounded-l ${metodoInstalacao === 'A1' ? 'text-amber-400 font-extrabold bg-amber-500/10' : ''}`}>
+                                  {a1Val} A
+                                </td>
+                                <td className={`py-1.5 text-center px-2 ${metodoInstalacao === 'B1' ? 'text-amber-400 font-extrabold bg-amber-500/10' : ''}`}>
+                                  {b1Val} A
+                                </td>
+                                <td className={`py-1.5 text-center px-2 ${metodoInstalacao === 'C' ? 'text-amber-400 font-extrabold bg-amber-500/10' : ''}`}>
+                                  {cVal} A
+                                </td>
+                                <td className={`py-1.5 text-center px-2 rounded-r ${metodoInstalacao === 'D' ? 'text-amber-400 font-extrabold bg-amber-500/10' : ''}`}>
+                                  {dVal} A
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="text-[9px] text-slate-400 bg-neutral-900/40 p-2 rounded-lg border border-neutral-850/50 leading-relaxed font-sans">
+                      💡 <strong>Como escolher?</strong> Para fiações padrão embutidas na alvenaria ou duto em gesso, use <strong>B1</strong>. Para passagens subterrâneas externas, use <strong>D</strong>. A ampacidade máxima admissível mudará dinamicamente indicando sobrecarga caso a corrente do circuito exceda o limite de condução térmica do método físico.
+                    </div>
                   </div>
                 </div>
 
@@ -1303,7 +1479,7 @@ export default function App() {
             <div className="border border-stone-200 rounded-xl p-4 flex flex-col justify-between">
               <span className="text-[10px] text-stone-400 block uppercase">Metodologia NBR 5410</span>
               <p className="text-[11px] text-stone-600 mt-1 lines-tight">
-                Cálculo em conformidade com o método B1 de instalação. Queda percentual calculada utilizando a impedância simplificada para cobre eletrolítico puro (resistividade equivalente a 0.0172 e alumínio 0.0282).
+                Cálculo em conformidade com o método {metodoInstalacao} de instalação. Queda percentual calculada utilizando a impedância simplificada para cobre eletrolítico puro (resistividade equivalente a 0.0172 e alumínio 0.0282).
               </p>
             </div>
             

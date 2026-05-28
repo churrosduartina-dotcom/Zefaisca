@@ -26,4 +26,5 @@ export interface CircuitoItem {
   kva: string;
   quedaPercentual: string;
   data: string;
+  metodo?: string;
 }
