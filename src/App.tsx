@@ -32,7 +32,8 @@ import {
   ChevronDown,
   TrendingDown,
   Clock,
-  PrinterIcon
+  PrinterIcon,
+  Mail
 } from 'lucide-react';
 import { AppliancePreset, CircuitoItem } from './types';
 import appLogo from './assets/images/app_logo_1779886943076.png';
@@ -161,11 +162,25 @@ export default function App() {
   const [nomeCliente, setNomeCliente] = useState<string>('');
   const [enderecoObra, setEnderecoObra] = useState<string>('');
   const [observacoes, setObservacoes] = useState<string>('');
-  const [eletricista, setEletricista] = useState<string>('Donizete Meireles');
+  const [eletricista, setEletricista] = useState<string>(() => {
+    return localStorage.getItem('eletricista-nome-v1') || 'Donizete Meireles';
+  });
+  const [contatoEmail, setContatoEmail] = useState<string>(() => {
+    return localStorage.getItem('eletricista-email-v1') || 'jdr.eletrica@gmail.com';
+  });
   const [dataCalculo, setDataCalculo] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
+
+  // Persist technician name and email to localStorage when modified
+  useEffect(() => {
+    localStorage.setItem('eletricista-nome-v1', eletricista);
+  }, [eletricista]);
+
+  useEffect(() => {
+    localStorage.setItem('eletricista-email-v1', contatoEmail);
+  }, [contatoEmail]);
 
   // Circuit history state
   const [circuitosSalvos, setCircuitosSalvos] = useState<CircuitoItem[]>([]);
@@ -381,6 +396,53 @@ export default function App() {
     return Math.max(0.3, Math.min(4.0, duration));
   }, [corrente]);
 
+  // Dynamic mailto link with prefilled subject and complete calculation history & active circuit breakdown
+  const getMailtoUrl = () => {
+    const subject = encodeURIComponent(`Memorial de Cálculos Elétricos NBR 5410 - ${nomeCliente || customCircuitName}`);
+    
+    let bodyText = `Olá,\n\nSegue o memorial de cálculo de dimensionamento em conformidade com a NBR 5410:\n\n`;
+    
+    if (nomeCliente || enderecoObra) {
+      bodyText += `=== IDENTIFICAÇÃO DO PROJETO ===\n`;
+      if (nomeCliente) bodyText += `Cliente: ${nomeCliente}\n`;
+      if (enderecoObra) bodyText += `Local da Obra: ${enderecoObra}\n`;
+      bodyText += `Responsável Técnico: ${eletricista}\n`;
+      bodyText += `--------------------------------\n\n`;
+    }
+    
+    bodyText += `=== CIRCUITO ATIVO PRINCIPAL ===\n`;
+    bodyText += `Nome do Circuito: ${customCircuitName}\n`;
+    bodyText += `Potência: ${potencia}W (${(Number(potencia) / 1000).toFixed(2)} kW / kVA com FP ${fatorPotencia})\n`;
+    bodyText += `Tensão: ${tensao}V (${fases === 3 ? 'Trifásico (3F)' : fases === 2 ? 'Bifásico (F+F)' : 'Monofásico (F+N)'})\n`;
+    bodyText += `Corrente de Projeto: ${corrente}A\n`;
+    bodyText += `Distância do Circuito: ${distancia} m\n`;
+    bodyText += `Material do Condutor: ${material === 'cobre' ? 'Cobre (Cu)' : 'Alumínio (Al)'}\n`;
+    bodyText += `Método de Instalação: Método ${metodoInstalacao}\n`;
+    bodyText += `Cabo Recomendado pela NBR 5410: ${bitolaNBR5410} mm²\n`;
+    
+    const activeSpecs = getQuedaDeTensaoSpecs(parseFloat(bitolaNBR5410) || 2.5, Number(corrente));
+    bodyText += `Queda de Tensão Estimada: ${activeSpecs.dropPercent}% (Limite adotado: ${limiteQueda}%)\n`;
+    bodyText += `Status do Circuito: ${activeSpecs.isOverload ? '⚠️ Sobrecarga' : activeSpecs.isDropUnsafe ? '⚠️ Queda de tensão excessiva' : '✅ Em Conformidade'}\n\n`;
+    
+    if (circuitosSalvos.length > 0) {
+      bodyText += `=== QUADRO DE DIMENSIONAMENTO GERAL (${circuitosSalvos.length}  circuitos) ===\n`;
+      circuitosSalvos.forEach((cir, index) => {
+        bodyText += `${index + 1}. ${cir.nome}:\n`;
+        bodyText += `   - Potência: ${cir.potencia}W | Tensão: ${cir.tensao}V | Corrente: ${cir.corrente}A\n`;
+        bodyText += `   - Condutor: ${cir.bitola} mm² (${cir.pf === 'cobre' ? 'Cobre' : 'Alumínio'})\n`;
+        bodyText += `   - Queda de Tensão: ${cir.quedaPercentual}\n`;
+        if (cir.metodo) bodyText += `   - Método de Referência: ${cir.metodo}\n`;
+        bodyText += `\n`;
+      });
+    }
+    
+    bodyText += `Gerado automaticamente via Calculadora de Eletricista NBR 5410.\n`;
+    bodyText += `Responsável: ${eletricista}\n`;
+    if (contatoEmail) bodyText += `E-mail de contato: ${contatoEmail}\n`;
+    
+    return `mailto:${contatoEmail}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+  };
+
   return (
     <div className="min-h-screen bg-[#0d0f12] text-slate-100 font-sans p-3 sm:p-6 lg:p-8 selection:bg-yellow-500 selection:text-neutral-950">
       
@@ -417,8 +479,16 @@ export default function App() {
               <h1 className="text-xl sm:text-2xl font-black font-display text-white tracking-tight mt-0.5 leading-none">
                 Cálculos Elétricos
               </h1>
-              <span className="text-xs text-amber-500 font-mono font-medium block mt-0.5">
-                Donizete Meireles
+              <span className="text-xs text-amber-500 font-mono font-medium block mt-0.5 text-ellipsis overflow-hidden max-w-xs md:max-w-md">
+                {eletricista} {contatoEmail && (
+                  <a
+                    href={getMailtoUrl()}
+                    className="text-slate-400 font-normal hover:text-amber-400 hover:underline transition-colors ml-1 inline-flex items-center gap-1"
+                    title="Enviar e-mail automático com memorial de cálculos"
+                  >
+                    ({contatoEmail})
+                  </a>
+                )}
               </span>
             </div>
           </div>
@@ -448,9 +518,9 @@ export default function App() {
           <div className="absolute right-0 top-0 text-amber-500/2 opacity-5 font-black text-7xl select-none uppercase pointer-events-none">
             Donizete
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
             
-            <div className="md:col-span-1 space-y-1">
+            <div className="space-y-1">
               <h2 className="text-sm font-bold text-slate-300 font-display flex items-center gap-1.5">
                 <User className="text-amber-500 w-4 h-4" />
                 Dono do Projeto
@@ -464,7 +534,7 @@ export default function App() {
               />
             </div>
 
-            <div className="md:col-span-1 space-y-1">
+            <div className="space-y-1">
               <h2 className="text-sm font-bold text-slate-300 font-display flex items-center gap-1.5">
                 <MapPin className="text-amber-500 w-4 h-4" />
                 Local da Obra/Instalação
@@ -478,7 +548,7 @@ export default function App() {
               />
             </div>
 
-            <div className="md:col-span-1 space-y-1">
+            <div className="space-y-1">
               <h2 className="text-sm font-bold text-slate-300 font-display flex items-center gap-1.5">
                 <Calendar className="text-amber-500 w-4 h-4" />
                 Responsável Técnico
@@ -488,6 +558,20 @@ export default function App() {
                 value={eletricista}
                 onChange={(e) => setEletricista(e.target.value)}
                 placeholder="Eletricista Responsável"
+                className="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500 outline-none rounded-xl p-2.5 text-xs text-white transition-all focus:ring-1 focus:ring-amber-500/25"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-sm font-bold text-slate-300 font-display flex items-center gap-1.5">
+                <Mail className="text-amber-500 w-4 h-4" />
+                E-mail de Contato
+              </h2>
+              <input
+                type="email"
+                value={contatoEmail}
+                onChange={(e) => setContatoEmail(e.target.value)}
+                placeholder="Ex e-mail de contato: jdr.eletrica@gmail.com"
                 className="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500 outline-none rounded-xl p-2.5 text-xs text-white transition-all focus:ring-1 focus:ring-amber-500/25"
               />
             </div>
@@ -1003,7 +1087,7 @@ export default function App() {
                   `}</style>
 
                   <div className="flex justify-between w-full text-[9px] font-mono text-neutral-500 mt-2">
-                    <span>Queda: ~{getQuedaDeTensaoSpecs(parseFloat(bitolaNBR5410) || 2.5, Number(corrente)).isDropUnsafe ? '⚠️ Unsafe' : '✅ Conformado'}</span>
+                    <span>Queda: ~{getQuedaDeTensaoSpecs(parseFloat(bitolaNBR5410) || 2.5, Number(corrente)).isDropUnsafe ? '⚠️ Queda Alta' : '✅ Conformado'}</span>
                     <span>Intensidade: {corrente}A</span>
                   </div>
                 </div>
@@ -1364,10 +1448,24 @@ export default function App() {
                     <td className="font-bold text-stone-500 py-1 pr-2">Local do Projeto:</td>
                     <td className="py-1 text-stone-900">{enderecoObra || 'Não Declarado'}</td>
                   </tr>
-                  <tr>
+                  <tr className="border-b border-stone-100">
                     <td className="font-bold text-stone-500 py-1 pr-2">Eletricista Técnico:</td>
                     <td className="py-1 text-stone-900 font-bold">{eletricista || 'Donizete Meireles'}</td>
                   </tr>
+                  {contatoEmail && (
+                    <tr>
+                      <td className="font-bold text-stone-500 py-1 pr-2">E-mail de Contato:</td>
+                      <td className="py-1 text-stone-900 font-mono text-[11px]">
+                        <a
+                          href={getMailtoUrl()}
+                          className="text-amber-600 hover:underline transition-colors focus:outline-none"
+                          title="Enviar e-mail automático com memorial de cálculos"
+                        >
+                          {contatoEmail}
+                        </a>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1488,6 +1586,15 @@ export default function App() {
                 {eletricista || 'Donizete Meireles'}
               </div>
               <span className="text-[10px] text-stone-500 uppercase font-black mt-0.5">Eletricista Responsável pela Emissão</span>
+              {contatoEmail && (
+                <a
+                  href={getMailtoUrl()}
+                  className="text-[9px] text-stone-500 hover:text-amber-600 hover:underline transition-colors font-mono mt-0.5 block"
+                  title="Enviar e-mail automático com memorial de cálculos"
+                >
+                  {contatoEmail}
+                </a>
+              )}
             </div>
           </div>
 
@@ -1505,6 +1612,18 @@ export default function App() {
           <p className="text-slate-400 text-[11px] max-w-xl mx-auto leading-relaxed">
             Geração de memoriais de cálculos de queda de tensão simplificados de cobre e alumínio, potências, FP e ampacidades. Desenvolvido no ambiente de {eletricista || 'Donizete Meireles'}.
           </p>
+          {contatoEmail && (
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-300 font-mono pt-1">
+              <span>Contato / Suporte:</span>
+              <a
+                href={getMailtoUrl()}
+                className="text-amber-400 hover:underline hover:text-amber-300 transition-colors"
+                title="Clique para enviar um e-mail com todo o memorial de cálculo pronto!"
+              >
+                {contatoEmail}
+              </a>
+            </div>
+          )}
           <div className="text-[10px] text-slate-600 font-mono pt-1">
             © 2026 • Ferramenta Digital de Apoio de Campo. Todos os direitos reservados.
           </div>
