@@ -33,7 +33,9 @@ import {
   TrendingDown,
   Clock,
   PrinterIcon,
-  Mail
+  Mail,
+  Heart,
+  Copy
 } from 'lucide-react';
 import { AppliancePreset, CircuitoItem } from './types';
 import appLogo from './assets/images/app_logo_1779886943076.png';
@@ -185,6 +187,14 @@ export default function App() {
   // Circuit history state
   const [circuitosSalvos, setCircuitosSalvos] = useState<CircuitoItem[]>([]);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [pixCopied, setPixCopied] = useState<boolean>(false);
+
+  // Copy Pix key handler
+  const handleCopyPixKey = () => {
+    navigator.clipboard.writeText('jdr.interlanches@gmail.com');
+    setPixCopied(true);
+    setTimeout(() => setPixCopied(false), 2500);
+  };
 
   // Read saved circuits on mount
   useEffect(() => {
@@ -1365,6 +1375,53 @@ export default function App() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* VOLUNTARY CONTRIBUTION / PIX SUPPORT CARD */}
+            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-950/40 border border-neutral-800 rounded-3xl p-5 relative overflow-hidden backdrop-blur-md no-print">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-amber-500/10 text-amber-500 border border-amber-500/15 rounded-2xl shrink-0">
+                  <Heart className="w-5 h-5 fill-amber-500/20" />
+                </div>
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <h4 className="text-xs font-bold text-slate-200 tracking-wider uppercase font-display flex items-center gap-1.5">
+                    Mantenha o App Gratuito
+                  </h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                    Esta ferramenta é 100% gratuita, profissional e sem anúncios. Se este aplicativo te ajudou a poupar tempo nos seus dimensionamentos, considere apoiar o projeto com qualquer valor via Pix!
+                  </p>
+                  
+                  {/* Pix key dynamic copy box */}
+                  <div className="mt-3 flex items-center justify-between gap-1.5 bg-neutral-950/80 p-2 sm:p-2.5 rounded-xl border border-neutral-800/85 focus-within:border-amber-500/45 transition-colors">
+                    <div className="truncate font-mono text-[10px] text-amber-400 pl-1">
+                      jdr.interlanches@gmail.com
+                    </div>
+                    <button
+                      onClick={handleCopyPixKey}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shrink-0 active:scale-95 ${
+                        pixCopied
+                          ? 'bg-emerald-500 text-neutral-950 font-black'
+                          : 'bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-slate-200'
+                      }`}
+                      title="Copiar Chave Pix"
+                    >
+                      {pixCopied ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 shrink-0" />
+                          <span>Copiar Pix</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* TECHNICAL MATH EQUATIONS SHEET */}
